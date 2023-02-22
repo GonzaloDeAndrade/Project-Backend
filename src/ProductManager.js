@@ -1,4 +1,4 @@
-const fs = require("fs")
+import fs from "fs"
 
 class ProductManager{
     
@@ -115,11 +115,4 @@ class ProductManager{
     }
 }
 
-
-async function main(){
-    const manager1 = new ProductManager('./products.json')
-    // await manager1.addProduct("Buzo Oversize", "Buzo de Gran calidad Tamaño Grande" , 12000, "ruta de imagen", "code1", 10)
-    // await manager1.addProduct("Jogger", "Pantalon Cargo Elastizado", 17000, "ruta de imagen", "code2", 8)
-    // await manager1.addProduct("Remera Adidas", "Remera 100% algodon", 13000, "ruta de imagen","code3",7)
-
-}
+export default ProductManager
