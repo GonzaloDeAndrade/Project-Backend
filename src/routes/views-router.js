@@ -11,10 +11,11 @@ viewsRouter.get("/", async (req,res)=>{
 
 viewsRouter.get("/real-time-products", async (req,res)=>{
     const products = await manager.getProducts()
-    res.render("real-time-products", {products})            
+    res.render("real-time-products", {products})             
+})
 
-   // opción 2 emitir los products por websocket
-    
+viewsRouter.get("/chat", async (req,res)=>{
+    res.render("chat")
 })
 
 export default viewsRouter
