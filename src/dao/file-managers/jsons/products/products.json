@@ -1,46 +1,46 @@
 [
     {
         "id": 1,
-        "title": "Teclado Redragon",
-        "description": "Teclado 60% para gaming.",
+        "title": "Buzo Adidas",
+        "description": "Buzo Adidas OVERSIZE",
         "price": 8000,
         "thumbail": [],
         "code": "code1",
         "stock": 20,
         "status": true,
-        "category": "Teclados"
+        "category": "Buzos"
     },
     {
         "id": 2,
-        "title": "Mouse Logitech",
-        "description": "Mouse inalámbrico con RGB",
+        "title": "Pantalon Nike",
+        "description": "Pantalon Cargo NIKE",
         "price": 12000,
         "thumbail": [],
         "code": "code2",
         "stock": 32,
         "status": true,
-        "category": "Mouses"
+        "category": "Pantalones"
     },
     {
         "id": 0,
-        "title": "Auriculares Crosair inalámbricos",
-        "description": "Auriculares Gamer de la mejor calidad, para que juegues con tus amigos!",
+        "title": "Gorra LEVIS",
+        "description": "Gorra LEVIS Premium Edition",
         "price": 22000,
         "thumbail": [],
         "code": "codee5",
         "stock": 20,
         "status": true,
-        "category": "Auriculares"
+        "category": "Gorros"
     },
     {
         "id": 3,
-        "title": "Silla ergónomica",
-        "description": "Silla ideal para productividad",
+        "title": "Reloj XIAOMI ",
+        "description": "Reloj Redmi Note 6 Smart",
         "price": 30000,
         "thumbail": [],
         "code": "code11230",
         "stock": 5,
         "status": true,
-        "category": "Sillas"
+        "category": "Otros"
     }
 ]
