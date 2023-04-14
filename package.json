@@ -1,5 +1,5 @@
 {
-  "name": "desafioentregable1",
+"name": "desafioentregable1",
   "version": "1.0.0",
   "description": "Proyecto para el curso de Backend de Coderhouse",
   "main": "app.js",
@@ -7,24 +7,19 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon ./src/app.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/valentinoaraya/proyectoBackend.git"
-  },
+ },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/valentinoaraya/proyectoBackend/issues"
-  },
-  "homepage": "https://github.com/valentinoaraya/proyectoBackend#readme",
   "dependencies": {
+    "connect-mongo": "^5.0.0",
+    "cookie-parser": "^1.4.6",
     "express": "^4.18.2",
-    "express-handlebars": "^7.0.2",
+    "express-handlebars": "^7.0.1",
+    "express-session": "^1.17.3",
     "mongoose": "^7.0.3",
     "mongoose-paginate-v2": "^1.7.1",
-    "nodemon": "^2.0.21",
+    "nodemon": "^2.0.20",
     "socket.io": "^4.6.1"
   }
 }
