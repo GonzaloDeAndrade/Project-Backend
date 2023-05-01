@@ -1,124 +1,156 @@
-import cartModel from "../models/cart.model.js"
+import cartModel from "../models/carts.model.js";
+import productModel from "../models/products.model.js";
+import ProductManager from "./productManager.js";
 
-export default class CartManager {
-    constructor() {
-        console.log("Working with DB system.")
+const item = new ProductManager();
+
+class CartManager {
+  idAcum = 0;
+
+  constructor() {}
+  //creamos carrito
+  async createCart() {
+    const newCart = {
+      products: [],
+    };
+    const result = await cartModel.create(newCart);
+    return result;
+  }
+  //organizador de ids
+  async idOrganizer() {
+    const carts = await this.getCarts();
+    let chkCartNum = await carts.map((cart) => cart.cId);
+    let highId = await Math.max(...chkCartNum);
+    if (highId === -Infinity) {
+      return 1;
+    } else {
+      console.log("pasa por adicion");
+      return highId + 1;
     }
+  }
 
-    async getCarts() {
-        try {
-            const carts = await cartModel.find().lean()
-            return carts
-        } catch (err) {
-            console.log(err.message)
-            return []
-        }
+  async getCarts(cId) {
+    try {
+      if (cId) {
+        const cartsfiltered = await cartModel
+          .find({ _id: `${cId}` })
+          .populate("products.product").lean();
+        return cartsfiltered;
+      } else {
+        const prodsInCart = await cartModel.find().lean();
+        return prodsInCart;
+      }
+    } catch (error) {
+      return [];
     }
+  }
 
-    async addCart() {
-        try {
-            const cart = {
-                products: []
-            }
-            const result = await cartModel.create(cart)
-            return result
-        } catch (err) {
-            throw new Error(err)
-        }
+  async addProductToCart3(cartId, productId, quanty) {
+    try {
+      const findProduct = await cartModel
+        .findById(cartId)
+        .populate("products.product");
+
+      const existingProductIndex = findProduct.products.findIndex(
+        (p) => p.product._id.toString() === productId
+      );
+      let quantyToAdd = quanty ? quanty : 1;
+      if (existingProductIndex !== -1) {
+        findProduct.products[existingProductIndex].quantity += Number(quantyToAdd);
+      } else {
+        findProduct.products.push({ product: productId, quantity: quantyToAdd });
+      }
+
+      return await findProduct.save();
+    } catch (err) {
+      throw new Error(err);
     }
+  }
+  //intento modificacion directa por mongo FALLA
+  // async addProductToCart2(cId, pId, quanty) {
+  //   try {
+  //     //revisar que el cId exista
+  //     const cart = await cartModel.findById(cId);
+  //     if (cart) {
+  //       //revisar que el producto si existe
+  //       const prodToAdd = await item.getProductById(pId);
+  //       if (prodToAdd) {
+  //         //revisar si existe el prod en el carrito
+  //         let isInCart = await cartModel.exists({
+  //           _id: cId,
+  //           "products.product": pId,
+  //         });
+  //         let quantyToAdd = quanty ? quanty : 1;
+  //         if (isInCart === null) {
+  //           console.log("prod NO ESTA EN EL CARRITO");
+  //           let updateCart = await cartModel.updateOne(
+  //             { _id: cId },
+  //             { $push: { products: { product: pId, quantity: quantyToAdd } } }
+  //           );
+  //           const cartupdated = await cartModel.findById(cId);
+  //           console.log(cartupdated);
+  //           return updateCart, cartupdated;
+  //         } else {
+  //           console.log("prod si esta en el carrito");
+  //           let updateProdInCart = await cartModel.updateOne(
+  //             { _id: cId, "products.product": pId },
+  //             { $set: { products: { product: pId, quantity: quantyToAdd } } }
+  //           );
+  //           const cartupdated = await cartModel.findById(cId);
+  //           console.log(cartupdated);
+  //           return updateProdInCart, cartupdated;
+  //         }
+  //       } else {
+  //         return "no existe el producto";
+  //       }
+  //     } else {
+  //       return "no existe el carrito";
+  //     }
+  //   } catch (error) {}
+  // }
 
-    async getCartProducts(id) {
-        try {
-            const cart = await cartModel.findById(id).populate("products.product")
-            return cart
-        } catch (err) {
-            throw new Error(err)
-        }
+  async addProductArray(cId, arr) {
+    try {
+      console.log(cId);
+      if (!cId || !arr) {
+        console.log("falta info");
+        return "falta info";
+      } else {
+        console.log(arr);
+
+        let test = await this.getCarts(cId);
+        console.log(test);
+        let addArr = await cartModel.updateOne(
+          { _id: cId },
+          { $push: { products: { $each: arr } } }
+        );
+        console.log(addArr);
+        return addArr;
+      }
+    } catch (error) {
+      return "error en upppadad";
     }
+  }
 
-    async addProductToCart(prod, cartID) {
-        try {
-            const cart = await cartModel.findById(cartID)
-            const productInCart = cart.products.find(elem => elem.product.toString() === prod._id.toString())
+  async clearCart(cId) {
+    let cartToClear = await cartModel.updateOne(
+      { _id: cId },
+      { $pull: { products: {} } }
+    );
+    return cartToClear;
+  }
 
-            if (productInCart) {
-                productInCart.quantity += 1
-                await cart.save()
-                await cart.populate("products.product")
-                console.log(JSON.stringify(cart, null, "\t"))
-            } else {
-                cart.products.push({ product: prod._id })
-                await cart.save()
-                await cart.populate("products.product")
-                console.log(JSON.stringify(cart, null, "\t"))
-            }
-        } catch (err) {
-            throw new Error(err)
-        }
+  async deleteProd(cId, pId) {
+    if (!cId || !pId) {
+      console.log("falta Información");
+    } else {
+      let prodDeleted = await cartModel.updateOne(
+        { _id: cId },
+        { $pull: { products: { product: pId } } }
+      );
+      return prodDeleted;
     }
-
-    async deleteProductInCart(cartID, productID) {
-        try {
-            const cart = await cartModel.findById(cartID)
-            const product = cart.products.find(elem => elem.product.toString() === productID)
-            console.log(product)
-
-            if (!product) {
-                throw new Error("No existe producto con ese ID")
-            }
-
-            if (product.quantity > 1) {
-                product.quantity -= 1
-                cart.save()
-            } else {
-                let newCartProducts = cart.products.filter((p) => p.product.toString() !== productID)
-                cart.products = newCartProducts
-                cart.save()
-            }
-
-            console.log(cart)
-
-        } catch (err) {
-            throw new Error(err)
-        }
-    }
-
-    async moreQuantity(cartID, productID, quantity) {
-        try {
-            const cart = await cartModel.findById(cartID)
-            const product = cart.products.find(elem => elem.product.toString() === productID)
-
-            if (!cart) {
-                throw new Error("No existe carrito con ese id.")
-            }
-
-            if (product) {
-                product.quantity += quantity
-                await cart.save()
-                await cart.populate("products.product")
-                console.log(JSON.stringify(cart, null, "\t"))
-            } else {
-                cart.products.push({ product: productID })
-                await cart.save()
-                const newProduct = cart.products.find(elem => elem.product.toString() === productID)
-                newProduct.quantity = quantity
-                await cart.save()
-                await cart.populate("products.product")
-                console.log(JSON.stringify(cart, null, "\t"))
-            }
-        } catch (err) {
-            throw new Error(err)
-        }
-    }
-
-    async clearCart(cid) {
-        try {
-            const cart = await cartModel.findById(cid)
-            cart.products = []
-            cart.save()
-            return cart
-        } catch (err) {
-            throw new Error(err)
-        }
-    }
+  }
 }
+
+export default CartManager;

@@ -1,42 +1,21 @@
-const socket = io()
+const socket = io();
 
-const containerProducts = document.getElementById("containerProducts")
-
-socket.on("new-product", (data)=>{
-    containerProducts.innerHTML += `
-                                    <li>
-                                        <p><b>${data.title}</b></p>
-                                        <p>Precio: $ ${data.price}</p>
-                                        <p>Stock: ${data.stock}</p>
-                                        <p>Categoría: ${data.category}</p>
-                                    </li>
-                                    `
+socket.on("productList", (data) =>{
+    console.log(data);
 })
 
-socket.on("delete-product", (products)=>{
-    containerProducts.innerHTML = ""
-    products.forEach( prod => {
-        containerProducts.innerHTML += `
-                                        <li>
-                                            <p><b>${prod.title}</b></p>
-                                            <p>Precio: $ ${prod.price}</p>
-                                            <p>Stock: ${prod.stock}</p>
-                                            <p>Categoría: ${prod.category}</p>
-                                        </li>
-                                        `
-    }) 
-})
+const productData = document.getElementById("prodsList-dysplay");
+socket.on("productList", async (data) => {
+  console.log(data);
+  let prodsList = "";
+  await data.forEach((e) => {
+    console.log(data.e);
+    prodsList += `<ul>
+        
+            <li>Titulo:${e.title}, Id:${e.id}, Precio${e.price}, Stock:${e.stock}</li>
+    
+    </ul>`;
+  });
+  productData.innerHTML = prodsList;
+});
 
-socket.on("update-product", (products)=>{
-    containerProducts.innerHTML = ""
-    products.forEach( prod => {
-        containerProducts.innerHTML += `
-                                        <li>
-                                            <p><b>${prod.title}</b></p>
-                                            <p>Precio: $ ${prod.price}</p>
-                                            <p>Stock: ${prod.stock}</p>
-                                            <p>Categoría: ${prod.category}</p>
-                                        </li>
-                                        `
-    }) 
-})

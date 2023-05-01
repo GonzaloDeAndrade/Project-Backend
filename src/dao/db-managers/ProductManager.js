@@ -1,107 +1,150 @@
-import producModel from "../models/product.model.js";
+import cartModel from "../models/carts.model.js";
+import productModel from "../models/products.model.js";
 
-export default class ProductManager {
-    constructor() {
-        "Working with DB system."
+class ProductManager {
+  idAcum = 0;
+  constructor() {}
+
+  async idOrganizer() {
+    const products = await this.getProducts();
+    let chkIdNum = await products.map((prods) => prods.id);
+    let highId = await Math.max(...chkIdNum);
+    console.log(highId);
+    if (highId === -Infinity) {
+      this.idAcum = 0;
+      return this.idAcum;
+    } else {
+      console.log("pasa por adicion");
+      return highId + 1;
+    }
+  }
+
+  async getProducts(limit, page, sortQ, queryKey, queryParam) {
+    //filters
+    let limitIn = limit ? limit : 10;
+    let pageIn = page ? page : 1;
+    let sortIn = sortQ ? { price: sortQ } : false;
+    let queryKeyIn = queryKey;
+    let queryIn = queryParam;
+    //paquete options
+    let options = { limit: limitIn, page: pageIn, sort: sortIn };
+    //paquete query
+    let querySearch;
+    if (queryKeyIn && queryIn) {
+      querySearch = { [queryKeyIn]: [queryIn] };
+      options.limit = 5;
+    } else {
+      {}
     }
 
-    titleOfProducts(str){
-        const words = str.split("-")
-        const wordsToUpperCase = words.map(w => w[0].toUpperCase() + w.slice(1))
-        const newTitle = wordsToUpperCase.join(" ")
-        return newTitle
+    try {
+      const products = await productModel.paginate(querySearch, options);
+      return products;
+    } catch (error) {
+      return "falla con mongo";
     }
+  }
 
-    async getProducts(page, limit, sort, query) {
-        try {
-            let newQuery
-            if (query.title && query.stock){
-                let newTitle = this.titleOfProducts(query.title)
-                newQuery = {
-                    title: newTitle,
-                    stock: query.stock
-                }
-            } else if (query.title && !query.stock){
-                let newTitle = this.titleOfProducts(query.title)
-                newQuery = {title: newTitle}
-            } else if (!query.title && query.stock){
-                newQuery = {stock: query.stock}
-            } else {
-                newQuery = {}
-            }
+  async chkProdsById(id) {
+    let check = await productModel.findById(id).lean();
+    return check;
+  }
 
-            let newSort
-            if (sort === "asc") {
-                sort = { price: "asc" }
-                newSort = "asc"
-            } else if (sort === "desc") {
-                sort = { price: "desc" }
-                newSort = "desc"
-            }
+  async chkProdsByCode(arr, code) {
+    let check = await arr.some((prod) => prod.code === code);
+    return check;
+  }
 
-            const products = await producModel.paginate(
-                newQuery,
-                {
-                    limit: limit ?? 10,
-                    lean: true,
-                    page: page ?? 1,
-                    sort: sort ?? "null"
-                }
-            )
-            if (sort) products.sort = newSort
-            return products
-        } catch (err) {
-            console.log(err)
-            return []
-        }
+  async addProduct(
+    code,
+    title,
+    description,
+    price,
+    thumbnail,
+    stock,
+    status,
+    category
+  ) {
+    //revisar que si esten todos los datos
+    if (code && title && description && price && stock && category) {
+      console.log("info completa gracias");
+    } else {
+      console.log(
+        `falta informacion para este item, 
+          recuerde agregar todos los campos:
+          code || title || description || price || thumbnail || stock`
+      );
     }
-
-    async addProduct(title, description, price, thumbail, code, stock, status, category) {
-
-        code = Math.floor(Math.random() * 100000000000)
-
-        try {
-            const product = {
-                title,
-                description,
-                price,
-                thumbail,
-                code,
-                stock,
-                status,
-                category
-            }
-            const result = await producModel.create(product)
-            return result
-        } catch (err) {
-            throw new Error(err.message)
-        }
+    //revisar que no existe codigo
+    let products = await this.getProducts(1, 1, false, "code", code);
+    if (products.totalDocs === 0) {
+      console.log(`no existe codigo: ${code} ===> SE CREARA NUEVO PRODUCTO`);
+      const product = {
+        code,
+        title,
+        description,
+        price,
+        thumbnail,
+        stock,
+        status,
+        category,
+      };
+      const result = await productModel.create(product);
+      return result;
+    } else {
+      console.log(`Ya existe el codigo ${code} y NO SE CREARA PRODUCTO`);
+      return `Ya existe el codigo ${code} y NO SE CREARA PRODUCTO`;
     }
+  }
 
-    async getProductById(id) {
-        try {
-            const product = await producModel.findById(id)
-            return product
-        } catch (err) {
-            throw new Error(err)
-        }
+  async getProductById(id) {
+    const chkProductId = await this.chkProdsById(id);
+    if (chkProductId) {
+      console.log(
+        `producto con el id ${id} encontrado, se mostrara a continuacion`
+      );
+      return chkProductId;
+    } else {
+      console.log(`el id ${id} solicitado no existe`);
+      return `el id ${id} solicitado no existe`;
     }
+  }
 
-    async deleteProduct(id) {
-        try {
-            const result = await producModel.deleteOne({ _id: id })
-            return result
-        } catch (err) {
-            throw new Error(err)
-        }
+  async getProductByCode(code) {
+    const products = await this.getProducts();
+    const chkProductId = await this.chkProdsById(products, code);
+    if (chkProductId) {
+      const codeFound = await products.find((prod) => prod.code === code);
+      console.log(
+        `producto con el id ${code} encontrado, se mostrara a continuacion`
+      );
+      console.log(codeFound);
+      return codeFound;
+    } else {
+      console.log(`el codigo ${code} solicitado no existe`);
     }
+  }
 
-    async updateProduct(id, propModify) {
-        try {
-            const result = await producModel.findOneAndUpdate({ _id: id }, propModify, { new: true })
-            return result
-        } catch (err) {
-            throw new Error(err)
-        }
+  async deleteProdById(id) {
+    try {
+      let del = await productModel.deleteOne({ _id: `${id}` });
+      return del;
+    } catch (error) {
+      console.log("error al borrar");
+      return error;
     }
+  }
+
+  async updateProdById(id, keyToUpdate, dataUpdate) {
+    if (!id || !keyToUpdate || !dataUpdate) {
+      console.log("falta Información");
+    } else {
+      let update = await productModel.updateOne({ _id: id }, [
+        { $set: { [keyToUpdate]: `${dataUpdate}` } },
+      ]);
+      return update;
+    }
+  }
 }
+
+export default ProductManager;

@@ -1,22 +1,22 @@
-import FileProductManager from "./file-managers/ProductManager.js"
-import FileCartManager from "./file-managers/CartManager.js"
-import DbProductManager from "./db-managers/ProductManager.js"
-import DbCartManager from "./db-managers/CartManager.js"
+import fileProductManager from "./file-managers/productManager.js";
+import dbProductManager from "./db-managers/productManager.js";
+import fileCartManager from "./file-managers/cartManager.js";
+import dbCartManager from "./db-managers/cartManager.js";
 
 const config = {
-    persistenceType: "db"
-}
+    persistanceType: "db",
+};
 
-let ProductManager, CartManager
+let ProductManager, CartManager;
 
-if (config.persistenceType === "db"){
-    ProductManager = DbProductManager
-    CartManager = DbCartManager
-} else if (config.persistenceType === "fs"){
-    ProductManager = FileProductManager
-    CartManager = FileCartManager
+if (config.persistanceType === "db"){
+    ProductManager = dbProductManager;
+    CartManager = dbCartManager;
+} else if (config.persistanceType === "file"){
+    ProductManager = fileProductManager;
+    CartManager = fileCartManager;
 } else {
-    throw new Error("Unkown persistence type.")
+    throw new Error("unknow persistance type");
 }
 
-export {ProductManager, CartManager}
+export {ProductManager, CartManager};
